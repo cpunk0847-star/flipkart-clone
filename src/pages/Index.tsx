@@ -2,8 +2,46 @@ import Header from "@/components/Header";
 import HeroCarousel from "@/components/HeroCarousel";
 import CategoryStrip from "@/components/CategoryStrip";
 import ProductGrid from "@/components/ProductGrid";
+import { products } from "@/data/mockProducts";
 
-// Sample product data
+// Get product data organized by category
+const mobileProducts = products.filter(p => p.category === "mobiles").slice(0, 10).map(p => ({
+  id: p.id,
+  image: p.image,
+  title: `${p.brand} ${p.name}`,
+  price: p.price,
+  originalPrice: p.originalPrice,
+  rating: p.rating,
+  reviews: p.reviews,
+  discount: p.discount,
+  offers: p.offers,
+}));
+
+const watchProducts = products.filter(p => p.category === "watches").map(p => ({
+  id: p.id,
+  image: p.image,
+  title: `${p.brand} ${p.name}`,
+  price: p.price,
+  originalPrice: p.originalPrice,
+  rating: p.rating,
+  reviews: p.reviews,
+  discount: p.discount,
+  offers: p.offers,
+}));
+
+const electronicsProducts = products.filter(p => p.category === "electronics").slice(0, 10).map(p => ({
+  id: p.id,
+  image: p.image,
+  title: `${p.brand} ${p.name}`,
+  price: p.price,
+  originalPrice: p.originalPrice,
+  rating: p.rating,
+  reviews: p.reviews,
+  discount: p.discount,
+  offers: p.offers,
+}));
+
+// Legacy sample data for backwards compatibility
 const featuredProducts = [
   {
     id: "1",
@@ -174,8 +212,9 @@ const Index = () => {
         <HeroCarousel />
       </div>
 
-      <ProductGrid title="Best Deals on Electronics" products={featuredProducts} />
-      <ProductGrid title="Trending in Fashion" products={trendingProducts} />
+      <ProductGrid title="Best Deals on Mobiles" products={mobileProducts} />
+      <ProductGrid title="Trending Watches" products={watchProducts} />
+      <ProductGrid title="Electronics & Accessories" products={electronicsProducts} />
       
       <footer className="bg-card border-t border-border mt-16 py-12">
         <div className="container mx-auto px-4">

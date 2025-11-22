@@ -1,15 +1,15 @@
-import { Smartphone, Shirt, Home, Watch, BookOpen, Dumbbell, Baby, Gift } from "lucide-react";
+import { Smartphone, Shirt, Home, Watch, Laptop, Headphones, Footprints, ShoppingBag } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const categories = [
-  { id: "electronics", name: "Electronics", icon: Smartphone },
+  { id: "mobiles", name: "Mobiles", icon: Smartphone },
+  { id: "watches", name: "Watches", icon: Watch },
+  { id: "laptops", name: "Laptops", icon: Laptop },
+  { id: "electronics", name: "Electronics", icon: Headphones },
   { id: "fashion", name: "Fashion", icon: Shirt },
-  { id: "home", name: "Home & Living", icon: Home },
-  { id: "accessories", name: "Accessories", icon: Watch },
-  { id: "books", name: "Books", icon: BookOpen },
-  { id: "sports", name: "Sports", icon: Dumbbell },
-  { id: "baby", name: "Baby & Kids", icon: Baby },
-  { id: "gifts", name: "Gifts", icon: Gift },
+  { id: "shoes", name: "Shoes", icon: Footprints },
+  { id: "home", name: "Home", icon: Home },
+  { id: "accessories", name: "More", icon: ShoppingBag },
 ];
 
 const CategoryStrip = () => {

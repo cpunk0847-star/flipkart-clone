@@ -7,6 +7,10 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } f
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { getProductById, products } from "@/data/mockProducts";
+import { getSmartRecommendations, getFrequentlyBoughtTogether } from "@/lib/recommendations";
+import FrequentlyBought from "@/components/FrequentlyBought";
+import ProductCard from "@/components/ProductCard";
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -15,20 +19,27 @@ const ProductDetail = () => {
   const [bidPrice, setBidPrice] = useState("");
   const [isWishlisted, setIsWishlisted] = useState(false);
 
-  // Sample product data
-  const product = {
+  // Get product from mock data
+  const productData = getProductById(id || "");
+  
+  // Fallback if product not found
+  const product = productData || {
     id: id || "1",
-    title: "Premium Wireless Headphones with Active Noise Cancellation",
+    name: "Premium Wireless Headphones with Active Noise Cancellation",
+    brand: "Sony",
+    category: "electronics",
+    image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&h=800&fit=crop",
     images: [
       "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&h=800&fit=crop",
       "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&h=800&fit=crop&q=80",
-      "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800&h=800&fit=crop&q=70",
     ],
     price: 4999,
     originalPrice: 9999,
     rating: 4.5,
     reviews: 12450,
     discount: 50,
+    inStock: true,
+    seller: "TechStore Official",
     offers: [
       "Bank Offer: 10% instant discount on SBI Credit Cards",
       "No Cost EMI available on orders above ₹3000",
@@ -42,11 +53,14 @@ const ProductDetail = () => {
       "Comfortable Over-Ear Design",
     ],
     description: "Experience premium audio quality with these wireless headphones featuring active noise cancellation, long battery life, and superior comfort for extended listening sessions.",
-    seller: "TechStore Official",
-    inStock: true,
-    eligibleForBidding: true,
-    freeBidCoupons: 2,
   };
+
+  const eligibleForBidding = product.price >= 1000;
+  const freeBidCoupons = 2;
+
+  // Get smart recommendations
+  const frequentlyBought = getFrequentlyBoughtTogether(product.id, products);
+  const youMayLike = getSmartRecommendations(product.id, product.category, products);
 
   const handleBidSubmit = async () => {
     if (!bidPrice || parseFloat(bidPrice) <= 0) {
@@ -75,13 +89,13 @@ const ProductDetail = () => {
           <div className="space-y-4">
             <div className="aspect-square rounded-lg overflow-hidden bg-card border border-border">
               <img
-                src={product.images[selectedImage]}
-                alt={product.title}
+                src={product.images ? product.images[selectedImage] : product.image}
+                alt={product.name}
                 className="w-full h-full object-cover"
               />
             </div>
             <div className="grid grid-cols-4 gap-2">
-              {product.images.map((img, idx) => (
+              {(product.images || [product.image]).map((img, idx) => (
                 <button
                   key={idx}
                   onClick={() => setSelectedImage(idx)}
@@ -104,8 +118,12 @@ const ProductDetail = () => {
           {/* Product Info */}
           <div className="space-y-6">
             <div>
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-sm text-muted-foreground">Brand:</span>
+                <span className="text-sm font-semibold text-primary">{product.brand}</span>
+              </div>
               <h1 className="text-2xl lg:text-3xl font-bold mb-2">
-                {product.title}
+                {product.name}
               </h1>
               
               {/* Rating */}
@@ -171,14 +189,14 @@ const ProductDetail = () => {
               </div>
 
               {/* Reverse Bidding */}
-              {product.eligibleForBidding && (
+              {eligibleForBidding && (
                 <Button
                   size="lg"
                   variant="outline"
                   className="w-full border-primary text-primary hover:bg-primary hover:text-primary-foreground font-semibold"
                   onClick={() => setBidModalOpen(true)}
                 >
-                  🎯 Bid Your Price - {product.freeBidCoupons} Free Bids Available
+                  🎯 Bid Your Price - {freeBidCoupons} Free Bids Available
                 </Button>
               )}
 
@@ -198,25 +216,59 @@ const ProductDetail = () => {
             </div>
 
             {/* Highlights */}
-            <div>
-              <h3 className="font-semibold mb-3">Product Highlights</h3>
-              <ul className="space-y-2">
-                {product.highlights.map((highlight, idx) => (
-                  <li key={idx} className="flex items-start gap-2 text-sm">
-                    <span className="text-primary mt-0.5">✓</span>
-                    <span>{highlight}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
+            {product.highlights && product.highlights.length > 0 && (
+              <div>
+                <h3 className="font-semibold mb-3">Product Highlights</h3>
+                <ul className="space-y-2">
+                  {product.highlights.map((highlight, idx) => (
+                    <li key={idx} className="flex items-start gap-2 text-sm">
+                      <span className="text-primary mt-0.5">✓</span>
+                      <span>{highlight}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
 
             {/* Description */}
-            <div>
-              <h3 className="font-semibold mb-3">Product Description</h3>
-              <p className="text-muted-foreground">{product.description}</p>
-            </div>
+            {product.description && (
+              <div>
+                <h3 className="font-semibold mb-3">Product Description</h3>
+                <p className="text-muted-foreground">{product.description}</p>
+              </div>
+            )}
           </div>
         </div>
+
+        {/* Frequently Bought Together */}
+        {frequentlyBought.length > 0 && (
+          <div className="mt-12">
+            <FrequentlyBought mainProduct={product} recommendations={frequentlyBought} />
+          </div>
+        )}
+
+        {/* You May Also Like */}
+        {youMayLike.length > 0 && (
+          <div className="mt-12">
+            <h2 className="text-2xl font-bold mb-6">You May Also Like</h2>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
+              {youMayLike.map((rec) => (
+                <ProductCard
+                  key={rec.id}
+                  id={rec.id}
+                  image={rec.image}
+                  title={rec.name}
+                  brand={rec.brand}
+                  price={rec.price}
+                  originalPrice={rec.originalPrice}
+                  rating={rec.rating}
+                  reviews={rec.reviews}
+                  discount={rec.discount}
+                />
+              ))}
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Bid Modal */}
@@ -225,7 +277,7 @@ const ProductDetail = () => {
           <DialogHeader>
             <DialogTitle>Place Your Bid</DialogTitle>
             <DialogDescription>
-              Name your price for <strong>{product.title}</strong>
+              Name your price for <strong>{product.name}</strong>
             </DialogDescription>
           </DialogHeader>
           
@@ -241,7 +293,7 @@ const ProductDetail = () => {
               </div>
               <div className="flex justify-between text-sm text-discount-green">
                 <span>Free Bid Coupons:</span>
-                <span className="font-semibold">{product.freeBidCoupons} available</span>
+                <span className="font-semibold">{freeBidCoupons} available</span>
               </div>
             </div>
 
