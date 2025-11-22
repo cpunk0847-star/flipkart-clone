@@ -2,12 +2,14 @@ import { Heart, Star } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import CategoryBadge from "./CategoryBadge";
 
 interface ProductCardProps {
   id: string;
   image: string;
   title: string;
   brand?: string;
+  category?: string;
   price: number;
   originalPrice?: number;
   rating: number;
@@ -21,6 +23,7 @@ const ProductCard = ({
   image,
   title,
   brand,
+  category,
   price,
   originalPrice,
   rating,
@@ -64,6 +67,11 @@ const ProductCard = ({
 
       {/* Product info */}
       <div className="space-y-2">
+        {/* Category Badge */}
+        {category && (
+          <CategoryBadge categoryId={category} />
+        )}
+        
         <h3 className="text-sm font-medium line-clamp-2 min-h-[2.5rem]">
           {title}
         </h3>

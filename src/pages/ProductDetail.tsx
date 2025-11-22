@@ -11,6 +11,7 @@ import { getProductById, products } from "@/data/mockProducts";
 import { getSmartRecommendations, getFrequentlyBoughtTogether } from "@/lib/recommendations";
 import FrequentlyBought from "@/components/FrequentlyBought";
 import ProductCard from "@/components/ProductCard";
+import CategoryBadge from "@/components/CategoryBadge";
 
 const ProductDetail = () => {
   const { id } = useParams();
@@ -118,9 +119,10 @@ const ProductDetail = () => {
           {/* Product Info */}
           <div className="space-y-6">
             <div>
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-sm text-muted-foreground">Brand:</span>
-                <span className="text-sm font-semibold text-primary">{product.brand}</span>
+              <div className="flex items-center gap-3 mb-3">
+                <CategoryBadge categoryId={product.category} />
+                <span className="text-sm text-muted-foreground">•</span>
+                <span className="text-sm">Brand: <span className="font-semibold text-primary">{product.brand}</span></span>
               </div>
               <h1 className="text-2xl lg:text-3xl font-bold mb-2">
                 {product.name}
@@ -261,6 +263,7 @@ const ProductDetail = () => {
                   image={rec.image}
                   title={rec.name}
                   brand={rec.brand}
+                  category={rec.category}
                   price={rec.price}
                   originalPrice={rec.originalPrice}
                   rating={rec.rating}
