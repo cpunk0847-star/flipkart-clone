@@ -8,7 +8,9 @@ import { products } from "@/data/mockProducts";
 const mobileProducts = products.filter(p => p.category === "mobiles").slice(0, 10).map(p => ({
   id: p.id,
   image: p.image,
-  title: `${p.brand} ${p.name}`,
+  title: p.name,
+  brand: p.brand,
+  category: p.category,
   price: p.price,
   originalPrice: p.originalPrice,
   rating: p.rating,
@@ -20,7 +22,9 @@ const mobileProducts = products.filter(p => p.category === "mobiles").slice(0, 1
 const watchProducts = products.filter(p => p.category === "watches").map(p => ({
   id: p.id,
   image: p.image,
-  title: `${p.brand} ${p.name}`,
+  title: p.name,
+  brand: p.brand,
+  category: p.category,
   price: p.price,
   originalPrice: p.originalPrice,
   rating: p.rating,
@@ -32,7 +36,9 @@ const watchProducts = products.filter(p => p.category === "watches").map(p => ({
 const electronicsProducts = products.filter(p => p.category === "electronics").slice(0, 10).map(p => ({
   id: p.id,
   image: p.image,
-  title: `${p.brand} ${p.name}`,
+  title: p.name,
+  brand: p.brand,
+  category: p.category,
   price: p.price,
   originalPrice: p.originalPrice,
   rating: p.rating,

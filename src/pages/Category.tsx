@@ -233,6 +233,8 @@ const Category = () => {
                     id={product.id}
                     image={product.image}
                     title={`${product.brand} ${product.name}`}
+                    brand={product.brand}
+                    category={product.category}
                     price={product.price}
                     originalPrice={product.originalPrice}
                     rating={product.rating}
