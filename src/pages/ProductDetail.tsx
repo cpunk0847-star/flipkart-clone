@@ -59,8 +59,8 @@ const ProductDetail = () => {
   const freeBidCoupons = 2;
 
   // Get smart recommendations
-  const frequentlyBought = getFrequentlyBoughtTogether(product.id, products);
-  const youMayLike = getSmartRecommendations(product.id, product.category, products);
+  const frequentlyBought = getFrequentlyBoughtTogether(product.id, products) || [];
+  const youMayLike = getSmartRecommendations(product.id, product.category, products) || [];
 
   const handleBidSubmit = async () => {
     if (!bidPrice || parseFloat(bidPrice) <= 0) {
@@ -241,14 +241,14 @@ const ProductDetail = () => {
         </div>
 
         {/* Frequently Bought Together */}
-        {frequentlyBought.length > 0 && (
+        {frequentlyBought && frequentlyBought.length > 0 && (
           <div className="mt-12">
             <FrequentlyBought mainProduct={product} recommendations={frequentlyBought} />
           </div>
         )}
 
         {/* You May Also Like */}
-        {youMayLike.length > 0 && (
+        {youMayLike && youMayLike.length > 0 && (
           <div className="mt-12">
             <h2 className="text-2xl font-bold mb-6">You May Also Like</h2>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
