@@ -7,6 +7,7 @@ interface ProductCardProps {
   id: string;
   image: string;
   title: string;
+  brand?: string;
   price: number;
   originalPrice?: number;
   rating: number;
@@ -19,6 +20,7 @@ const ProductCard = ({
   id,
   image,
   title,
+  brand,
   price,
   originalPrice,
   rating,
@@ -65,6 +67,9 @@ const ProductCard = ({
         <h3 className="text-sm font-medium line-clamp-2 min-h-[2.5rem]">
           {title}
         </h3>
+        {brand && (
+          <p className="text-xs text-muted-foreground font-medium">{brand}</p>
+        )}
 
         {/* Rating */}
         <div className="flex items-center gap-1">
