@@ -149,15 +149,17 @@ const ProductDetail = () => {
               </div>
 
               {/* Offers */}
-              <div className="space-y-2 mb-6">
-                <h3 className="font-semibold">Available Offers</h3>
-                {product.offers.map((offer, idx) => (
-                  <div key={idx} className="flex items-start gap-2 text-sm">
-                    <span className="text-discount-green font-semibold mt-0.5">•</span>
-                    <span>{offer}</span>
-                  </div>
-                ))}
-              </div>
+              {product.offers && product.offers.length > 0 && (
+                <div className="space-y-2 mb-6">
+                  <h3 className="font-semibold">Available Offers</h3>
+                  {product.offers.map((offer, idx) => (
+                    <div key={idx} className="flex items-start gap-2 text-sm">
+                      <span className="text-discount-green font-semibold mt-0.5">•</span>
+                      <span>{offer}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
 
               {/* Delivery */}
               <div className="flex items-center gap-2 mb-6 p-4 bg-muted rounded-lg">
