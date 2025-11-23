@@ -1,18 +1,35 @@
-import { ShoppingCart, Heart, User, Search, MapPin, Menu } from "lucide-react";
+import { ShoppingCart, Heart, User, Search, MapPin, Menu, LogOut, UserCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useCart } from "@/contexts/CartContext";
+import { useAuth } from "@/contexts/AuthContext";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const Header = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
+  const { getCartCount, loading: cartLoading } = useCart();
+  const { user, signOut } = useAuth();
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
       navigate(`/search?q=${encodeURIComponent(searchQuery)}`);
     }
+  };
+
+  const handleSignOut = async () => {
+    await signOut();
+    navigate("/");
   };
 
   return (
@@ -70,15 +87,47 @@ const Header = () => {
 
           {/* Actions */}
           <div className="flex items-center gap-2 md:gap-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => navigate("/login")}
-              className="hidden md:flex items-center gap-2"
-            >
-              <User className="w-5 h-5" />
-              <span>Login</span>
-            </Button>
+            {user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="hidden md:flex items-center gap-2"
+                  >
+                    <UserCircle className="w-5 h-5" />
+                    <span className="max-w-24 truncate">
+                      {user.user_metadata?.full_name || user.email?.split('@')[0]}
+                    </span>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-56">
+                  <DropdownMenuLabel>My Account</DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => navigate("/orders")}>
+                    My Orders
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => navigate("/wishlist")}>
+                    Wishlist
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={handleSignOut} className="text-destructive">
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Logout
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate("/login")}
+                className="hidden md:flex items-center gap-2"
+              >
+                <User className="w-5 h-5" />
+                <span>Login</span>
+              </Button>
+            )}
 
             <Button
               variant="ghost"
@@ -96,9 +145,11 @@ const Header = () => {
               className="relative"
             >
               <ShoppingCart className="w-5 h-5" />
-              <span className="absolute -top-1 -right-1 bg-accent text-accent-foreground text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
-                3
-              </span>
+              {!cartLoading && getCartCount() > 0 && (
+                <span className="absolute -top-1 -right-1 bg-accent text-accent-foreground text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+                  {getCartCount()}
+                </span>
+              )}
             </Button>
           </div>
         </div>

@@ -1,16 +1,27 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useNavigate } from "react-router-dom";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
+import { Loader2 } from "lucide-react";
 
 const Login = () => {
   const navigate = useNavigate();
+  const { user, signIn, signUp } = useAuth();
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user) {
+      navigate("/");
+    }
+  }, [user, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -20,9 +31,47 @@ const Login = () => {
       return;
     }
 
-    // Simulate API call
-    toast.success(isLogin ? "Login successful!" : "Account created successfully!");
-    navigate("/");
+    if (!isLogin && password.length < 8) {
+      toast.error("Password must be at least 8 characters");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      if (isLogin) {
+        const { error } = await signIn(email, password);
+        if (error) {
+          if (error.message.includes("Invalid login credentials")) {
+            toast.error("Invalid email or password");
+          } else if (error.message.includes("Email not confirmed")) {
+            toast.error("Please confirm your email address");
+          } else {
+            toast.error(error.message || "Failed to sign in");
+          }
+        } else {
+          toast.success("Welcome back!");
+          navigate("/");
+        }
+      } else {
+        const { error } = await signUp(email, password, name);
+        if (error) {
+          if (error.message.includes("already registered")) {
+            toast.error("An account with this email already exists");
+          } else {
+            toast.error(error.message || "Failed to create account");
+          }
+        } else {
+          toast.success("Account created successfully!");
+          navigate("/");
+        }
+      }
+    } catch (error) {
+      toast.error("An unexpected error occurred");
+      console.error("Auth error:", error);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -81,8 +130,15 @@ const Login = () => {
               )}
             </div>
 
-            <Button type="submit" size="lg" className="w-full btn-primary">
-              {isLogin ? "Login" : "Sign Up"}
+            <Button type="submit" size="lg" className="w-full btn-primary" disabled={loading}>
+              {loading ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  {isLogin ? "Signing in..." : "Creating account..."}
+                </>
+              ) : (
+                isLogin ? "Login" : "Sign Up"
+              )}
             </Button>
           </form>
 
