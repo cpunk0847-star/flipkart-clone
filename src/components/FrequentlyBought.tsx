@@ -1,5 +1,5 @@
 import { Product } from "@/data/mockProducts";
-import { Star, Plus, ShoppingCart, Check } from "lucide-react";
+import { Star, Plus, ShoppingCart, Check, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useCart } from "@/contexts/CartContext";
@@ -13,8 +13,9 @@ interface FrequentlyBoughtProps {
 
 const FrequentlyBought = ({ mainProduct, recommendations }: FrequentlyBoughtProps) => {
   const navigate = useNavigate();
-  const { addToCart, addMultipleToCart } = useCart();
+  const { addMultipleToCart } = useCart();
   const [addedToCart, setAddedToCart] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   if (recommendations.length === 0) return null;
 
@@ -23,20 +24,27 @@ const FrequentlyBought = ({ mainProduct, recommendations }: FrequentlyBoughtProp
     mainProduct.originalPrice + recommendations.reduce((sum, p) => sum + p.originalPrice, 0);
   const totalSavings = totalOriginalPrice - totalPrice;
 
-  const handleAddAllToCart = () => {
-    // Add main product + all recommendations
-    addMultipleToCart([mainProduct, ...recommendations]);
-    setAddedToCart(true);
-    
-    toast.success(
-      `Added ${1 + recommendations.length} items to cart! Saved ₹${totalSavings.toLocaleString()}`,
-      {
-        duration: 3000,
-      }
-    );
-    
-    // Reset button after 2 seconds
-    setTimeout(() => setAddedToCart(false), 2000);
+  const handleAddAllToCart = async () => {
+    setLoading(true);
+    try {
+      // Add main product + all recommendations
+      await addMultipleToCart([mainProduct, ...recommendations]);
+      setAddedToCart(true);
+      
+      toast.success(
+        `Added ${1 + recommendations.length} items to cart! Saved ₹${totalSavings.toLocaleString()}`,
+        {
+          duration: 3000,
+        }
+      );
+      
+      // Reset button after 2 seconds
+      setTimeout(() => setAddedToCart(false), 2000);
+    } catch (error) {
+      toast.error("Failed to add items to cart");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -135,10 +143,15 @@ const FrequentlyBought = ({ mainProduct, recommendations }: FrequentlyBoughtProp
           <Button 
             size="lg" 
             onClick={handleAddAllToCart}
-            disabled={addedToCart}
+            disabled={addedToCart || loading}
             className="w-full sm:w-auto bg-accent hover:bg-accent/90 text-accent-foreground font-semibold disabled:opacity-70"
           >
-            {addedToCart ? (
+            {loading ? (
+              <>
+                <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                Adding...
+              </>
+            ) : addedToCart ? (
               <>
                 <Check className="w-5 h-5 mr-2" />
                 Added to Cart
