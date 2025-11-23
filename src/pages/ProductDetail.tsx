@@ -12,9 +12,11 @@ import { getSmartRecommendations, getFrequentlyBoughtTogether } from "@/lib/reco
 import FrequentlyBought from "@/components/FrequentlyBought";
 import ProductCard from "@/components/ProductCard";
 import CategoryBadge from "@/components/CategoryBadge";
+import { useCart } from "@/contexts/CartContext";
 
 const ProductDetail = () => {
   const { id } = useParams();
+  const { addToCart } = useCart();
   const [selectedImage, setSelectedImage] = useState(0);
   const [bidModalOpen, setBidModalOpen] = useState(false);
   const [bidPrice, setBidPrice] = useState("");
@@ -179,6 +181,10 @@ const ProductDetail = () => {
                 <Button
                   size="lg"
                   className="flex-1 bg-accent hover:bg-accent/90 text-accent-foreground font-semibold"
+                  onClick={() => {
+                    addToCart(product);
+                    toast.success(`Added ${product.name} to cart!`);
+                  }}
                 >
                   <ShoppingCart className="w-5 h-5 mr-2" />
                   Add to Cart
