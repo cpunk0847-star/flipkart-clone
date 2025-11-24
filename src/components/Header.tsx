@@ -1,10 +1,11 @@
-import { ShoppingCart, Heart, User, Search, MapPin, Menu, LogOut, UserCircle } from "lucide-react";
+import { Heart, User, Search, MapPin, Menu, LogOut, UserCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useCart } from "@/contexts/CartContext";
 import { useAuth } from "@/contexts/AuthContext";
+import MiniCart from "./MiniCart";
+import BudgetControl from "./BudgetControl";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,7 +18,6 @@ import {
 const Header = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const navigate = useNavigate();
-  const { getCartCount, loading: cartLoading } = useCart();
   const { user, signOut } = useAuth();
 
   const handleSearch = (e: React.FormEvent) => {
@@ -86,7 +86,9 @@ const Header = () => {
           </form>
 
           {/* Actions */}
-          <div className="flex items-center gap-2 md:gap-4">
+          <div className="flex items-center gap-2 md:gap-3">
+            <BudgetControl />
+            
             {user ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -133,24 +135,12 @@ const Header = () => {
               variant="ghost"
               size="icon"
               onClick={() => navigate("/wishlist")}
-              className="relative"
+              className="relative hidden md:flex"
             >
               <Heart className="w-5 h-5" />
             </Button>
 
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => navigate("/cart")}
-              className="relative"
-            >
-              <ShoppingCart className="w-5 h-5" />
-              {!cartLoading && getCartCount() > 0 && (
-                <span className="absolute -top-1 -right-1 bg-accent text-accent-foreground text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
-                  {getCartCount()}
-                </span>
-              )}
-            </Button>
+            <MiniCart />
           </div>
         </div>
 

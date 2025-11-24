@@ -1,8 +1,10 @@
-import { Heart, Star } from "lucide-react";
+import { Heart, Star, ShoppingCart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import CategoryBadge from "./CategoryBadge";
+import { useCart } from "@/contexts/CartContext";
+import { toast } from "sonner";
 
 interface ProductCardProps {
   id: string;
@@ -16,6 +18,7 @@ interface ProductCardProps {
   reviews: number;
   discount?: number;
   offers?: string[];
+  inStock?: boolean;
 }
 
 const ProductCard = ({
@@ -30,13 +33,42 @@ const ProductCard = ({
   reviews,
   discount,
   offers,
+  inStock = true,
 }: ProductCardProps) => {
   const navigate = useNavigate();
+  const { addToCart } = useCart();
   const [isWishlisted, setIsWishlisted] = useState(false);
+  const [addingToCart, setAddingToCart] = useState(false);
 
   const toggleWishlist = (e: React.MouseEvent) => {
     e.stopPropagation();
     setIsWishlisted(!isWishlisted);
+  };
+
+  const handleAddToCart = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setAddingToCart(true);
+    
+    try {
+      await addToCart({
+        id,
+        name: title,
+        brand: brand || "",
+        category: category || "",
+        image,
+        price,
+        originalPrice: originalPrice || price,
+        rating,
+        reviews,
+        discount: discount || 0,
+        inStock,
+        seller: brand || "Official Store",
+      });
+      
+      console.log("[Analytics] add_to_cart", { product_id: id, product_name: title, price });
+    } finally {
+      setAddingToCart(false);
+    }
   };
 
   return (
@@ -111,17 +143,26 @@ const ProductCard = ({
         )}
       </div>
 
-      {/* Quick action on hover */}
-      <Button
-        size="sm"
-        className="w-full mt-3 opacity-0 group-hover:opacity-100 transition-opacity btn-primary"
-        onClick={(e) => {
-          e.stopPropagation();
-          navigate(`/product/${id}`);
-        }}
-      >
-        View Details
-      </Button>
+      {/* Quick actions */}
+      <div className="flex gap-2 mt-3">
+        <Button
+          size="sm"
+          className="flex-1 btn-primary gap-2"
+          onClick={handleAddToCart}
+          disabled={!inStock || addingToCart}
+        >
+          {!inStock ? (
+            "Out of Stock"
+          ) : addingToCart ? (
+            "Adding..."
+          ) : (
+            <>
+              <ShoppingCart className="w-4 h-4" />
+              Add to Cart
+            </>
+          )}
+        </Button>
+      </div>
     </div>
   );
 };
