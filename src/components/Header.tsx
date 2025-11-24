@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import MiniCart from "./MiniCart";
 import BudgetControl from "./BudgetControl";
+import easyshipLogo from "@/assets/easyship-logo.jpg";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -59,10 +60,13 @@ const Header = () => {
           {/* Logo */}
           <div 
             onClick={() => navigate("/")}
-            className="cursor-pointer flex items-center gap-2"
+            className="cursor-pointer flex items-center"
           >
-            <h1 className="text-2xl font-bold text-primary">Easyship</h1>
-            <span className="text-xs text-accent font-semibold italic">Express</span>
+            <img 
+              src={easyshipLogo} 
+              alt="Easyship" 
+              className="h-10 md:h-12 w-auto object-contain"
+            />
           </div>
 
           {/* Search bar */}
