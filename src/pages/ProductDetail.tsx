@@ -181,13 +181,14 @@ const ProductDetail = () => {
                 <Button
                   size="lg"
                   className="flex-1 bg-accent hover:bg-accent/90 text-accent-foreground font-semibold"
-                  onClick={() => {
-                    addToCart(product);
-                    toast.success(`Added ${product.name} to cart!`);
+                  disabled={!product.inStock}
+                  onClick={async () => {
+                    await addToCart(product);
+                    console.log("[Analytics] add_to_cart", { product_id: product.id, product_name: product.name, price: product.price });
                   }}
                 >
                   <ShoppingCart className="w-5 h-5 mr-2" />
-                  Add to Cart
+                  {product.inStock ? "Add to Cart" : "Out of Stock"}
                 </Button>
                 <Button
                   size="lg"
