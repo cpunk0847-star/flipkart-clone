@@ -6,6 +6,7 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import MiniCart from "./MiniCart";
 import BudgetControl from "./BudgetControl";
+import VisualSearchButton from "./VisualSearchButton";
 import easyshipLogo from "@/assets/easyship-logo.jpg";
 import {
   DropdownMenu,
@@ -70,24 +71,27 @@ const Header = () => {
           </div>
 
           {/* Search bar */}
-          <form onSubmit={handleSearch} className="flex-1 max-w-2xl hidden md:flex">
-            <div className="relative w-full">
-              <Input
-                type="text"
-                placeholder="Search for products, brands and more"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pr-12 h-11 bg-background border-none shadow-sm"
-              />
-              <Button
-                type="submit"
-                size="sm"
-                className="absolute right-1 top-1/2 -translate-y-1/2 bg-primary hover:bg-primary/90"
-              >
-                <Search className="w-5 h-5" />
-              </Button>
-            </div>
-          </form>
+          <div className="flex-1 max-w-2xl hidden md:flex gap-2">
+            <form onSubmit={handleSearch} className="flex-1">
+              <div className="relative w-full">
+                <Input
+                  type="text"
+                  placeholder="Search for products, brands and more"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="w-full pr-12 h-11 bg-background border-none shadow-sm"
+                />
+                <Button
+                  type="submit"
+                  size="sm"
+                  className="absolute right-1 top-1/2 -translate-y-1/2 bg-primary hover:bg-primary/90"
+                >
+                  <Search className="w-5 h-5" />
+                </Button>
+              </div>
+            </form>
+            <VisualSearchButton />
+          </div>
 
           {/* Actions */}
           <div className="flex items-center gap-2 md:gap-3">

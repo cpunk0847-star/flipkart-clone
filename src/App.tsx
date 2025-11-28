@@ -14,6 +14,7 @@ import Category from "./pages/Category";
 import Search from "./pages/Search";
 import Checkout from "./pages/Checkout";
 import NotFound from "./pages/NotFound";
+import VisualSearchResults from "./pages/VisualSearchResults";
 
 const queryClient = new QueryClient();
 
@@ -31,6 +32,7 @@ const App = () => (
                 <Route path="/product/:id" element={<ProductDetail />} />
                 <Route path="/category/:categoryId" element={<Category />} />
                 <Route path="/search" element={<Search />} />
+                <Route path="/visual-search-results" element={<VisualSearchResults />} />
                 <Route path="/cart" element={<Cart />} />
                 <Route path="/checkout" element={<Checkout />} />
                 <Route path="/login" element={<Login />} />
