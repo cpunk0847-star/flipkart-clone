@@ -89,6 +89,72 @@ export type Database = {
         }
         Relationships: []
       }
+      orders: {
+        Row: {
+          created_at: string
+          customer_email: string
+          customer_name: string
+          delivery_address: Json
+          delivery_charge: number
+          discount: number
+          email_sent: boolean
+          email_sent_at: string | null
+          estimated_delivery_date: string
+          id: string
+          items: Json
+          order_number: string
+          payment_method: string
+          status: string
+          subtotal: number
+          tax: number
+          total_amount: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          customer_email: string
+          customer_name: string
+          delivery_address: Json
+          delivery_charge?: number
+          discount?: number
+          email_sent?: boolean
+          email_sent_at?: string | null
+          estimated_delivery_date: string
+          id?: string
+          items: Json
+          order_number: string
+          payment_method: string
+          status?: string
+          subtotal: number
+          tax?: number
+          total_amount: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          customer_email?: string
+          customer_name?: string
+          delivery_address?: Json
+          delivery_charge?: number
+          discount?: number
+          email_sent?: boolean
+          email_sent_at?: string | null
+          estimated_delivery_date?: string
+          id?: string
+          items?: Json
+          order_number?: string
+          payment_method?: string
+          status?: string
+          subtotal?: number
+          tax?: number
+          total_amount?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       product_thresholds: {
         Row: {
           base_threshold: number
