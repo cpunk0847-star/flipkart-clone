@@ -1,11 +1,8 @@
-import { useState } from "react";
-import { useParams } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useParams, useLocation } from "react-router-dom";
 import Header from "@/components/Header";
 import { Button } from "@/components/ui/button";
-import { Star, Heart, ShoppingCart, Zap, MapPin } from "lucide-react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Star, Heart, ShoppingCart, Zap, MapPin, Lock } from "lucide-react";
 import { toast } from "sonner";
 import { getProductById, products } from "@/data/mockProducts";
 import { getSmartRecommendations, getFrequentlyBoughtTogether } from "@/lib/recommendations";
@@ -13,14 +10,30 @@ import FrequentlyBought from "@/components/FrequentlyBought";
 import ProductCard from "@/components/ProductCard";
 import CategoryBadge from "@/components/CategoryBadge";
 import { useCart } from "@/contexts/CartContext";
+import { useAuth } from "@/contexts/AuthContext";
+import { useBidding } from "@/hooks/useBidding";
+import BidModal from "@/components/BidModal";
 
 const ProductDetail = () => {
   const { id } = useParams();
+  const location = useLocation();
   const { addToCart } = useCart();
+  const { user } = useAuth();
+  const { isProductEligible, biddingData } = useBidding();
+  
   const [selectedImage, setSelectedImage] = useState(0);
   const [bidModalOpen, setBidModalOpen] = useState(false);
-  const [bidPrice, setBidPrice] = useState("");
   const [isWishlisted, setIsWishlisted] = useState(false);
+
+  // Check for bid redirect after login
+  useEffect(() => {
+    const bidRedirect = sessionStorage.getItem("bidRedirect");
+    if (bidRedirect && user && location.pathname === bidRedirect) {
+      sessionStorage.removeItem("bidRedirect");
+      // Automatically open bid modal after login redirect
+      setTimeout(() => setBidModalOpen(true), 500);
+    }
+  }, [user, location.pathname]);
 
   // Get product from mock data
   const productData = getProductById(id || "");
@@ -58,28 +71,31 @@ const ProductDetail = () => {
     description: "Experience premium audio quality with these wireless headphones featuring active noise cancellation, long battery life, and superior comfort for extended listening sessions.",
   };
 
-  const eligibleForBidding = product.price >= 1000;
-  const freeBidCoupons = 2;
+  // Check bidding eligibility
+  const eligibleForBidding = isProductEligible(product.category, product.price);
+  const { freeBidsRemaining, spendLevel, isLoading: biddingLoading } = biddingData;
+  
+  // Determine button text based on user status
+  const getBidButtonText = () => {
+    if (!user) {
+      return "🎯 Bid Your Price - Login Required";
+    }
+    if (freeBidsRemaining > 0) {
+      return `🎯 Bid Your Price - ${freeBidsRemaining} Free Bid${freeBidsRemaining > 1 ? 's' : ''} Available`;
+    }
+    if (spendLevel >= 1) {
+      return "🎯 Bid Your Price";
+    }
+    return "🎯 Bid Your Price - Unlock with ₹3K Spend";
+  };
 
   // Get smart recommendations
   const frequentlyBought = getFrequentlyBoughtTogether(product.id, products) || [];
   const youMayLike = getSmartRecommendations(product.id, product.category, products) || [];
 
-  const handleBidSubmit = async () => {
-    if (!bidPrice || parseFloat(bidPrice) <= 0) {
-      toast.error("Please enter a valid bid amount");
-      return;
-    }
-
-    // Simulate API call
-    const isAccepted = Math.random() > 0.5;
-    
-    if (isAccepted) {
-      toast.success("🎉 Bid Accepted! Your personalized price is ₹" + bidPrice);
-      setBidModalOpen(false);
-    } else {
-      toast.error("Bid not accepted. Try a slightly higher amount");
-    }
+  const handleBidAccepted = (bidPrice: number) => {
+    toast.success(`🎉 Bid accepted at ₹${bidPrice.toLocaleString()}! Proceeding to checkout...`);
+    // TODO: Navigate to checkout with bid price
   };
 
   return (
@@ -204,11 +220,20 @@ const ProductDetail = () => {
                 <Button
                   size="lg"
                   variant="outline"
-                  className="w-full border-primary text-primary hover:bg-primary hover:text-primary-foreground font-semibold"
+                  className="w-full border-primary text-primary hover:bg-primary hover:text-primary-foreground font-semibold relative"
                   onClick={() => setBidModalOpen(true)}
+                  disabled={biddingLoading}
                 >
-                  🎯 Bid Your Price - {freeBidCoupons} Free Bids Available
+                  {!user && <Lock className="w-4 h-4 mr-2" />}
+                  {getBidButtonText()}
                 </Button>
+              )}
+
+              {/* Show why bidding is not available */}
+              {!eligibleForBidding && product.price >= 1000 && (
+                <div className="text-sm text-muted-foreground text-center p-3 bg-muted rounded-lg">
+                  💡 Reverse Bidding is not available for {product.category} products
+                </div>
               )}
 
               <Button
@@ -284,64 +309,19 @@ const ProductDetail = () => {
       </div>
 
       {/* Bid Modal */}
-      <Dialog open={bidModalOpen} onOpenChange={setBidModalOpen}>
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Place Your Bid</DialogTitle>
-            <DialogDescription>
-              Name your price for <strong>{product.name}</strong>
-            </DialogDescription>
-          </DialogHeader>
-          
-          <div className="space-y-4 py-4">
-            <div className="bg-muted p-4 rounded-lg space-y-2">
-              <div className="flex justify-between text-sm">
-                <span>List Price:</span>
-                <span className="line-through">₹{product.originalPrice.toLocaleString()}</span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span>Current Offer Price:</span>
-                <span className="font-semibold">₹{product.price.toLocaleString()}</span>
-              </div>
-              <div className="flex justify-between text-sm text-discount-green">
-                <span>Free Bid Coupons:</span>
-                <span className="font-semibold">{freeBidCoupons} available</span>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="bidPrice">Your Bid Price (₹)</Label>
-              <Input
-                id="bidPrice"
-                type="number"
-                placeholder="Enter your price"
-                value={bidPrice}
-                onChange={(e) => setBidPrice(e.target.value)}
-                min="1"
-              />
-              <p className="text-xs text-muted-foreground">
-                💡 Our algorithm will accept or reject based on hidden thresholds
-              </p>
-            </div>
-
-            <div className="flex gap-2">
-              <Button
-                variant="outline"
-                className="flex-1"
-                onClick={() => setBidModalOpen(false)}
-              >
-                Cancel
-              </Button>
-              <Button
-                className="flex-1 btn-primary"
-                onClick={handleBidSubmit}
-              >
-                Place Bid
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      <BidModal
+        open={bidModalOpen}
+        onOpenChange={setBidModalOpen}
+        product={{
+          id: product.id,
+          name: product.name,
+          price: product.price,
+          originalPrice: product.originalPrice,
+          category: product.category,
+          image: product.image,
+        }}
+        onBidAccepted={handleBidAccepted}
+      />
     </div>
   );
 };
