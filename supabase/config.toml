@@ -2,3 +2,6 @@ project_id = "tkwymayduyupibrlvgan"
 
 [functions.visual-search]
 verify_jwt = false
+
+[functions.evaluate-bid]
+verify_jwt = false

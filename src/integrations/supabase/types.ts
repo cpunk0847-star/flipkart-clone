@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      bid_coupons: {
+        Row: {
+          created_at: string
+          free_bids_remaining: number
+          id: string
+          total_free_bids_used: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          free_bids_remaining?: number
+          id?: string
+          total_free_bids_used?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          free_bids_remaining?: number
+          id?: string
+          total_free_bids_used?: number
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       cart_items: {
         Row: {
           created_at: string
@@ -62,6 +89,45 @@ export type Database = {
         }
         Relationships: []
       }
+      product_thresholds: {
+        Row: {
+          base_threshold: number
+          clearance_threshold: number | null
+          created_at: string
+          demand_level: string
+          id: string
+          is_clearance: boolean
+          min_safe_threshold: number
+          product_id: string
+          seller_cost: number
+          updated_at: string
+        }
+        Insert: {
+          base_threshold: number
+          clearance_threshold?: number | null
+          created_at?: string
+          demand_level?: string
+          id?: string
+          is_clearance?: boolean
+          min_safe_threshold: number
+          product_id: string
+          seller_cost: number
+          updated_at?: string
+        }
+        Update: {
+          base_threshold?: number
+          clearance_threshold?: number | null
+          created_at?: string
+          demand_level?: string
+          id?: string
+          is_clearance?: boolean
+          min_safe_threshold?: number
+          product_id?: string
+          seller_cost?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -83,6 +149,66 @@ export type Database = {
           full_name?: string | null
           id?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      user_bids: {
+        Row: {
+          attempt_number: number
+          bid_amount: number
+          created_at: string
+          id: string
+          product_id: string
+          status: string
+          used_free_coupon: boolean
+          user_id: string
+        }
+        Insert: {
+          attempt_number?: number
+          bid_amount: number
+          created_at?: string
+          id?: string
+          product_id: string
+          status?: string
+          used_free_coupon?: boolean
+          user_id: string
+        }
+        Update: {
+          attempt_number?: number
+          bid_amount?: number
+          created_at?: string
+          id?: string
+          product_id?: string
+          status?: string
+          used_free_coupon?: boolean
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_spending: {
+        Row: {
+          created_at: string
+          id: string
+          spend_level: number
+          total_spent: number
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          spend_level?: number
+          total_spent?: number
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          spend_level?: number
+          total_spent?: number
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
