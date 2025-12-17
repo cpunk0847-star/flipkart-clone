@@ -156,10 +156,13 @@ export default function BidModal({ open, onOpenChange, product, onBidAccepted }:
               </div>
             </div>
 
-            <div className="space-y-2">
-              <div className="flex items-center gap-2 text-sm">
-                <Sparkles className="w-4 h-4 text-accent" />
-                <span>New users get <strong>1 FREE bid coupon</strong>!</span>
+            <div className="space-y-3">
+              <div className="bg-gradient-to-r from-accent/20 to-primary/20 p-3 rounded-lg border border-accent/30">
+                <div className="flex items-center gap-2 text-sm font-medium">
+                  <Sparkles className="w-5 h-5 text-accent animate-pulse" />
+                  <span>New users get <strong className="text-accent">3 FREE bid coupons</strong>!</span>
+                </div>
+                <p className="text-xs text-muted-foreground mt-1">Try Reverse Bidding 3 times without spending unlock!</p>
               </div>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <TrendingUp className="w-4 h-4" />
@@ -208,23 +211,19 @@ export default function BidModal({ open, onOpenChange, product, onBidAccepted }:
             </div>
 
             {freeBidsRemaining > 0 && (
-              <div className="bg-accent/10 border border-accent/30 p-4 rounded-lg">
-                <div className="flex items-center gap-2 text-accent">
-                  <Sparkles className="w-5 h-5" />
-                  <span className="font-semibold">You have {freeBidsRemaining} free bid coupon!</span>
+              <div className="bg-gradient-to-r from-accent/10 to-primary/10 border border-accent/30 p-4 rounded-lg">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2 text-accent">
+                    <Sparkles className="w-5 h-5 animate-pulse" />
+                    <span className="font-semibold">Free Bids Available!</span>
+                  </div>
+                  <Badge className="bg-accent text-accent-foreground text-lg px-3 py-1">
+                    {freeBidsRemaining}
+                  </Badge>
                 </div>
-                <p className="text-sm text-muted-foreground mt-1">
-                  Use it to try Reverse Bidding once for free.
+                <p className="text-sm text-muted-foreground mt-2">
+                  Use your free coupon{freeBidsRemaining > 1 ? 's' : ''} to try Reverse Bidding!
                 </p>
-                <Button 
-                  className="mt-3 w-full" 
-                  variant="outline"
-                  onClick={() => {
-                    // Allow bidding with free coupon
-                  }}
-                >
-                  Use Free Bid Coupon
-                </Button>
               </div>
             )}
 
@@ -277,9 +276,14 @@ export default function BidModal({ open, onOpenChange, product, onBidAccepted }:
               <span>Current Offer Price:</span>
               <span className="font-semibold">₹{product.price.toLocaleString()}</span>
             </div>
-            <div className="flex justify-between text-sm text-discount-green">
-              <span>Free Bid Coupons:</span>
-              <span className="font-semibold">{freeBidsRemaining} available</span>
+            <div className="flex justify-between items-center text-sm">
+              <span className="flex items-center gap-1">
+                <Sparkles className="w-4 h-4 text-accent" />
+                Free Bid Coupons:
+              </span>
+              <Badge variant={freeBidsRemaining > 0 ? "default" : "secondary"} className={freeBidsRemaining > 0 ? "bg-accent text-accent-foreground" : ""}>
+                {freeBidsRemaining} left
+              </Badge>
             </div>
             <div className="flex justify-between text-sm">
               <span>Bid Attempts:</span>
