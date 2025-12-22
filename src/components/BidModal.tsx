@@ -15,7 +15,22 @@ import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { useBidding } from "@/hooks/useBidding";
-import { Loader2, Lock, Sparkles, TrendingUp, AlertCircle } from "lucide-react";
+import { 
+  Loader2, 
+  Lock, 
+  Sparkles, 
+  TrendingUp, 
+  AlertCircle, 
+  Info,
+  CreditCard,
+  Ticket
+} from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface BidModalProps {
   open: boolean;
@@ -43,6 +58,8 @@ export default function BidModal({ open, onOpenChange, product, onBidAccepted }:
     suggestedIncreases?: number[];
     attemptsRemaining?: number;
   } | null>(null);
+  const [showCardAnimation, setShowCardAnimation] = useState(false);
+  const [hasShownWelcomeToast, setHasShownWelcomeToast] = useState(false);
 
   const MAX_ATTEMPTS = 3;
 
@@ -61,8 +78,22 @@ export default function BidModal({ open, onOpenChange, product, onBidAccepted }:
     }
   }, [open]);
 
+  // Show welcome toast for users with free bid cards
+  useEffect(() => {
+    if (open && user && !hasShownWelcomeToast && biddingData.freeBidsRemaining > 0) {
+      const hasSeenWelcome = localStorage.getItem(`bidWelcome_${user.id}`);
+      if (!hasSeenWelcome) {
+        toast.success("🎉 You have free Bid Cards!", {
+          description: `Use your ${biddingData.freeBidsRemaining} Bid Cards to try Reverse Bidding and name your price!`,
+          duration: 5000,
+        });
+        localStorage.setItem(`bidWelcome_${user.id}`, "true");
+        setHasShownWelcomeToast(true);
+      }
+    }
+  }, [open, user, biddingData.freeBidsRemaining, hasShownWelcomeToast]);
+
   const handleLoginRedirect = () => {
-    // Store current URL to redirect back after login
     sessionStorage.setItem("bidRedirect", window.location.pathname);
     navigate("/login");
   };
@@ -80,8 +111,18 @@ export default function BidModal({ open, onOpenChange, product, onBidAccepted }:
       return;
     }
 
+    // Check if user has bid cards
+    if (biddingData.freeBidsRemaining <= 0 && biddingData.spendLevel < 1 && biddingData.totalSpent < 3000) {
+      toast.error("No Bid Cards remaining. Buy more to continue bidding!");
+      return;
+    }
+
     setIsSubmitting(true);
     setLastRejection(null);
+
+    // Trigger card consumption animation
+    setShowCardAnimation(true);
+    setTimeout(() => setShowCardAnimation(false), 1000);
 
     try {
       const response = await placeBid(
@@ -125,6 +166,61 @@ export default function BidModal({ open, onOpenChange, product, onBidAccepted }:
   const { canBid, reason } = canUserBid();
   const { freeBidsRemaining, totalSpent, spendLevel } = biddingData;
   const spendProgress = Math.min((totalSpent / 3000) * 100, 100);
+  const hasNoBidCards = freeBidsRemaining <= 0 && spendLevel < 1 && totalSpent < 3000;
+
+  // Bid Cards Display Component
+  const BidCardsDisplay = () => (
+    <div className={`relative transition-all duration-300 ${showCardAnimation ? 'scale-95 opacity-70' : 'scale-100 opacity-100'}`}>
+      <div className="flex items-center gap-3 p-3 rounded-xl bg-gradient-to-r from-primary/10 via-accent/10 to-primary/10 border border-primary/20">
+        <div className="relative">
+          <div className="w-12 h-12 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center shadow-lg">
+            <Ticket className="w-6 h-6 text-primary-foreground" />
+          </div>
+          {showCardAnimation && (
+            <div className="absolute inset-0 rounded-lg bg-primary/50 animate-ping" />
+          )}
+        </div>
+        <div className="flex-1">
+          <div className="flex items-center gap-2">
+            <span className="font-semibold text-foreground">Bid Cards</span>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger>
+                  <Info className="w-4 h-4 text-muted-foreground hover:text-foreground transition-colors" />
+                </TooltipTrigger>
+                <TooltipContent side="top" className="max-w-xs">
+                  <p className="text-sm">
+                    <strong>How Reverse Bidding Works:</strong><br/>
+                    1. Enter your desired price below the listed price<br/>
+                    2. Our AI evaluates your bid instantly<br/>
+                    3. If accepted, you get the product at your price!<br/>
+                    4. Each bid uses 1 Bid Card (max 3 attempts per product)
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+          <div className="flex items-center gap-2 mt-1">
+            <div className="flex gap-1">
+              {[...Array(5)].map((_, i) => (
+                <div
+                  key={i}
+                  className={`w-5 h-7 rounded-sm border-2 transition-all duration-300 ${
+                    i < freeBidsRemaining
+                      ? 'bg-gradient-to-b from-primary to-accent border-primary/50 shadow-sm'
+                      : 'bg-muted/30 border-muted-foreground/20'
+                  }`}
+                />
+              ))}
+            </div>
+            <span className={`text-sm font-bold ${freeBidsRemaining > 0 ? 'text-primary' : 'text-muted-foreground'}`}>
+              {freeBidsRemaining} left
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
 
   // Not logged in view
   if (!user) {
@@ -157,12 +253,16 @@ export default function BidModal({ open, onOpenChange, product, onBidAccepted }:
             </div>
 
             <div className="space-y-3">
-              <div className="bg-gradient-to-r from-accent/20 to-primary/20 p-3 rounded-lg border border-accent/30">
-                <div className="flex items-center gap-2 text-sm font-medium">
-                  <Sparkles className="w-5 h-5 text-accent animate-pulse" />
-                  <span>New users get <strong className="text-accent">3 FREE bid coupons</strong>!</span>
+              <div className="bg-gradient-to-r from-accent/20 to-primary/20 p-4 rounded-xl border border-accent/30">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+                    <Ticket className="w-5 h-5 text-primary-foreground" />
+                  </div>
+                  <div>
+                    <span className="font-semibold text-foreground">New users get <strong className="text-accent">5 FREE Bid Cards</strong>!</span>
+                    <p className="text-xs text-muted-foreground mt-0.5">Try Reverse Bidding and name your price</p>
+                  </div>
                 </div>
-                <p className="text-xs text-muted-foreground mt-1">Try Reverse Bidding 3 times without spending unlock!</p>
               </div>
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <TrendingUp className="w-4 h-4" />
@@ -171,12 +271,64 @@ export default function BidModal({ open, onOpenChange, product, onBidAccepted }:
             </div>
 
             <Button 
-              className="w-full btn-primary" 
+              className="w-full" 
               size="lg"
               onClick={handleLoginRedirect}
             >
-              Login to Place Bid
+              Login to Get Free Bid Cards
             </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+  // No bid cards view
+  if (hasNoBidCards) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Ticket className="w-5 h-5 text-muted-foreground" />
+              No Bid Cards Remaining
+            </DialogTitle>
+            <DialogDescription>
+              You've used all your free Bid Cards
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="py-6 space-y-4">
+            <BidCardsDisplay />
+
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <span>Your spending</span>
+                <span className="font-semibold">₹{totalSpent.toLocaleString()} / ₹3,000</span>
+              </div>
+              <Progress value={spendProgress} className="h-2" />
+              <p className="text-xs text-muted-foreground">
+                Spend ₹{(3000 - totalSpent).toLocaleString()} more to unlock unlimited bidding
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Button 
+                className="w-full bg-gradient-to-r from-primary to-accent hover:opacity-90 transition-opacity" 
+                size="lg"
+                onClick={() => toast.info("Bid Card purchase coming soon!", { description: "This feature is under development." })}
+              >
+                <CreditCard className="w-4 h-4 mr-2" />
+                Buy More Bid Cards
+              </Button>
+              <Button 
+                className="w-full" 
+                variant="outline"
+                onClick={() => onOpenChange(false)}
+              >
+                Continue Shopping
+              </Button>
+            </div>
           </div>
         </DialogContent>
       </Dialog>
@@ -199,6 +351,8 @@ export default function BidModal({ open, onOpenChange, product, onBidAccepted }:
           </DialogHeader>
           
           <div className="py-6 space-y-4">
+            <BidCardsDisplay />
+
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span>Your spending</span>
@@ -211,19 +365,8 @@ export default function BidModal({ open, onOpenChange, product, onBidAccepted }:
             </div>
 
             {freeBidsRemaining > 0 && (
-              <div className="bg-gradient-to-r from-accent/10 to-primary/10 border border-accent/30 p-4 rounded-lg">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-accent">
-                    <Sparkles className="w-5 h-5 animate-pulse" />
-                    <span className="font-semibold">Free Bids Available!</span>
-                  </div>
-                  <Badge className="bg-accent text-accent-foreground text-lg px-3 py-1">
-                    {freeBidsRemaining}
-                  </Badge>
-                </div>
-                <p className="text-sm text-muted-foreground mt-2">
-                  Use your free coupon{freeBidsRemaining > 1 ? 's' : ''} to try Reverse Bidding!
-                </p>
+              <div className="text-center text-sm text-primary font-medium">
+                ✨ You can still use your {freeBidsRemaining} free Bid Card{freeBidsRemaining > 1 ? 's' : ''}!
               </div>
             )}
 
@@ -266,6 +409,9 @@ export default function BidModal({ open, onOpenChange, product, onBidAccepted }:
         </DialogHeader>
         
         <div className="space-y-4 py-4">
+          {/* Bid Cards Display */}
+          <BidCardsDisplay />
+
           {/* Product info */}
           <div className="bg-muted p-4 rounded-lg space-y-2">
             <div className="flex justify-between text-sm">
@@ -275,15 +421,6 @@ export default function BidModal({ open, onOpenChange, product, onBidAccepted }:
             <div className="flex justify-between text-sm">
               <span>Current Offer Price:</span>
               <span className="font-semibold">₹{product.price.toLocaleString()}</span>
-            </div>
-            <div className="flex justify-between items-center text-sm">
-              <span className="flex items-center gap-1">
-                <Sparkles className="w-4 h-4 text-accent" />
-                Free Bid Coupons:
-              </span>
-              <Badge variant={freeBidsRemaining > 0 ? "default" : "secondary"} className={freeBidsRemaining > 0 ? "bg-accent text-accent-foreground" : ""}>
-                {freeBidsRemaining} left
-              </Badge>
             </div>
             <div className="flex justify-between text-sm">
               <span>Bid Attempts:</span>
@@ -373,7 +510,7 @@ export default function BidModal({ open, onOpenChange, product, onBidAccepted }:
               Cancel
             </Button>
             <Button
-              className="flex-1 btn-primary"
+              className="flex-1"
               onClick={handleBidSubmit}
               disabled={isSubmitting || attempts >= MAX_ATTEMPTS || !bidPrice}
             >
@@ -383,16 +520,32 @@ export default function BidModal({ open, onOpenChange, product, onBidAccepted }:
                   Evaluating...
                 </>
               ) : (
-                "Place Bid"
+                <>
+                  <Ticket className="w-4 h-4 mr-2" />
+                  Place Bid
+                </>
               )}
             </Button>
           </div>
+
+          {/* Buy more bid cards CTA */}
+          {freeBidsRemaining <= 2 && spendLevel < 1 && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="w-full text-xs text-muted-foreground hover:text-foreground"
+              onClick={() => toast.info("Bid Card purchase coming soon!", { description: "This feature is under development." })}
+            >
+              <CreditCard className="w-3 h-3 mr-1" />
+              Running low? Buy more Bid Cards
+            </Button>
+          )}
 
           {/* Loyalty tier info */}
           {spendLevel < 2 && (
             <div className="text-xs text-muted-foreground text-center pt-2">
               {spendLevel === 0 ? (
-                <span>Spend ₹{(3000 - totalSpent).toLocaleString()} more to unlock better bid acceptance rates</span>
+                <span>Spend ₹{(3000 - totalSpent).toLocaleString()} more to unlock unlimited bidding</span>
               ) : (
                 <span>Spend ₹{(5000 - totalSpent).toLocaleString()} more to reach VIP status with best rates</span>
               )}
