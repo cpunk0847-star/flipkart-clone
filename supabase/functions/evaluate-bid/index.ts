@@ -192,11 +192,11 @@ Deno.serve(async (req) => {
       .eq("user_id", user.id)
       .maybeSingle();
 
-    // Initialize if not exists
+    // Initialize if not exists (5 free bids for new users)
     if (!couponData) {
       const { data: newCoupon } = await supabaseAdmin
         .from("bid_coupons")
-        .insert({ user_id: user.id, free_bids_remaining: 1 })
+        .insert({ user_id: user.id, free_bids_remaining: 5 })
         .select()
         .single();
       couponData = newCoupon;
